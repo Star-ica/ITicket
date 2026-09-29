@@ -715,511 +715,43 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
 <div id="toast"></div>
 
 <script>
-/* ─────────────────────────────────────────────────────────
-   CONFIG — replace with your deployed contract address
+
+  /* ─────────────────────────────────────────────────────────
+   CONFIG
    ───────────────────────────────────────────────────────── */
-const CONTRACT_ADDRESS = "0x2111b3e2409F4b78ff6A251146a45D98DA488703"; // TODO: replace after deployment
+const CONTRACT_ADDRESS = "0x9A65c4E4fee23D0ddB2578be162E30CF3Af91c64";
 
-// Pinata (IPFS) config — used to upload event banner images.
-// ⚠️ This JWT is embedded client-side, so anyone who views page source can use it
-// to pin files under your Pinata account/quota. Fine for a demo/internal tool;
-// for production, proxy uploads through your own backend instead.
-const PINATA_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIxZTg0YmJlOS0zOGZkLTQxZDAtYTA3ZS0yOGIyYzQwMjI0MzMiLCJlbWFpbCI6ImplcnlkYW0xNDhAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBpbl9wb2xpY3kiOnsicmVnaW9ucyI6W3siZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiRlJBMSJ9LHsiZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiTllDMSJ9XSwidmVyc2lvbiI6MX0sIm1mYV9lbmFibGVkIjpmYWxzZSwic3RhdHVzIjoiQUNUSVZFIn0sImF1dGhlbnRpY2F0aW9uVHlwZSI6InNjb3BlZEtleSIsInNjb3BlZEtleUtleSI6IjU0OTcyMTdkMzM4MGUyMmE5MDZiIiwic2NvcGVkS2V5U2VjcmV0IjoiOTg4NzA4MDc5OTA1NjhiZDgyYmQ4YzEyMjBkYWFmZDk1NzNhMGIxMGJhYzFjNGQ4ZjQ1NzA0OTUwOWEzZDc2NyIsImV4cCI6MTc5ODI3Nzc1OX0.45Q6OvDON7RJE4xcI92p2fMEAVQ1SQYAfcUZkIRdt-I"; // TODO: replace with your Pinata JWT
+// Pinata JWT is exposed client-side. Rotate the old one and proxy uploads via your backend for production.
+const PINATA_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIxZTg0YmJlOS0zOGZkLTQxZDAtYTA3ZS0yOGIyYzQwMjI0MzMiLCJlbWFpbCI6ImplcnlkYW0xNDhAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBpbl9wb2xpY3kiOnsicmVnaW9ucyI6W3siZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiRlJBMSJ9LHsiZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiTllDMSJ9XSwidmVyc2lvbiI6MX0sIm1mYV9lbmFibGVkIjpmYWxzZSwic3RhdHVzIjoiQUNUSVZFIn0sImF1dGhlbnRpY2F0aW9uVHlwZSI6InNjb3BlZEtleSIsInNjb3BlZEtleUtleSI6IjU0OTcyMTdkMzM4MGUyMmE5MDZiIiwic2NvcGVkS2V5U2VjcmV0IjoiOTg4NzA4MDc5OTA1NjhiZDgyYmQ4YzEyMjBkYWFmZDk1NzNhMGIxMGJhYzFjNGQ4ZjQ1NzA0OTUwOWEzZDc2NyIsImV4cCI6MTc5ODI3Nzc1OX0.45Q6OvDON7RJE4xcI92p2fMEAVQ1SQYAfcUZkIRdt-I"; 
+const NETWORKS = {
+  botchain: {
+    chainId: '0x2A5', // 677
+    chainName: 'Botchain',
+    rpcUrls: ['https://rpc.botchain.ai'],
+    blockExplorerUrls: ['https://scan.botchain.ai/'],
+    nativeCurrency: { name: 'Botchain', symbol: 'BOT', decimals: 18 },
+  },
+};
+const DEFAULT_CHAIN = NETWORKS.botchain;
+const SYM = DEFAULT_CHAIN.nativeCurrency.symbol;
 
-// Full deployed contract ABI (from build artifacts)
+// Human-readable ABI (only what the UI uses)
 const ABI = [
-	{
-		"inputs": [],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
-	{
-		"inputs": [
-			{ "internalType": "address", "name": "sender", "type": "address" },
-			{ "internalType": "uint256", "name": "tokenId", "type": "uint256" },
-			{ "internalType": "address", "name": "owner", "type": "address" }
-		],
-		"name": "ERC721IncorrectOwner",
-		"type": "error"
-	},
-	{
-		"inputs": [
-			{ "internalType": "address", "name": "operator", "type": "address" },
-			{ "internalType": "uint256", "name": "tokenId", "type": "uint256" }
-		],
-		"name": "ERC721InsufficientApproval",
-		"type": "error"
-	},
-	{
-		"inputs": [ { "internalType": "address", "name": "approver", "type": "address" } ],
-		"name": "ERC721InvalidApprover",
-		"type": "error"
-	},
-	{
-		"inputs": [ { "internalType": "address", "name": "operator", "type": "address" } ],
-		"name": "ERC721InvalidOperator",
-		"type": "error"
-	},
-	{
-		"inputs": [ { "internalType": "address", "name": "owner", "type": "address" } ],
-		"name": "ERC721InvalidOwner",
-		"type": "error"
-	},
-	{
-		"inputs": [ { "internalType": "address", "name": "receiver", "type": "address" } ],
-		"name": "ERC721InvalidReceiver",
-		"type": "error"
-	},
-	{
-		"inputs": [ { "internalType": "address", "name": "sender", "type": "address" } ],
-		"name": "ERC721InvalidSender",
-		"type": "error"
-	},
-	{
-		"inputs": [ { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ],
-		"name": "ERC721NonexistentToken",
-		"type": "error"
-	},
-	{
-		"inputs": [],
-		"name": "ReentrancyGuardReentrantCall",
-		"type": "error"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{ "indexed": true, "internalType": "address", "name": "owner", "type": "address" },
-			{ "indexed": true, "internalType": "address", "name": "approved", "type": "address" },
-			{ "indexed": true, "internalType": "uint256", "name": "tokenId", "type": "uint256" }
-		],
-		"name": "Approval",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{ "indexed": true, "internalType": "address", "name": "owner", "type": "address" },
-			{ "indexed": true, "internalType": "address", "name": "operator", "type": "address" },
-			{ "indexed": false, "internalType": "bool", "name": "approved", "type": "bool" }
-		],
-		"name": "ApprovalForAll",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{ "indexed": false, "internalType": "uint256", "name": "_fromTokenId", "type": "uint256" },
-			{ "indexed": false, "internalType": "uint256", "name": "_toTokenId", "type": "uint256" }
-		],
-		"name": "BatchMetadataUpdate",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{ "indexed": true, "internalType": "uint256", "name": "eventId", "type": "uint256" },
-			{ "indexed": true, "internalType": "address", "name": "creator", "type": "address" }
-		],
-		"name": "EventCancelled",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{ "indexed": true, "internalType": "uint256", "name": "eventId", "type": "uint256" },
-			{ "indexed": true, "internalType": "address", "name": "creator", "type": "address" },
-			{ "indexed": false, "internalType": "string", "name": "name", "type": "string" },
-			{ "indexed": false, "internalType": "uint256", "name": "ticketPrice", "type": "uint256" },
-			{ "indexed": false, "internalType": "uint256", "name": "maxCapacity", "type": "uint256" },
-			{ "indexed": false, "internalType": "uint256", "name": "startTime", "type": "uint256" }
-		],
-		"name": "EventCreated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [ { "indexed": false, "internalType": "uint256", "name": "_tokenId", "type": "uint256" } ],
-		"name": "MetadataUpdate",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{ "indexed": true, "internalType": "address", "name": "creator", "type": "address" },
-			{ "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" }
-		],
-		"name": "ProceedsWithdrawn",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{ "indexed": true, "internalType": "uint256", "name": "tokenId", "type": "uint256" },
-			{ "indexed": true, "internalType": "uint256", "name": "eventId", "type": "uint256" },
-			{ "indexed": true, "internalType": "address", "name": "attendee", "type": "address" },
-			{ "indexed": false, "internalType": "bytes32", "name": "verificationCode", "type": "bytes32" }
-		],
-		"name": "TicketMinted",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{ "indexed": true, "internalType": "uint256", "name": "tokenId", "type": "uint256" },
-			{ "indexed": true, "internalType": "uint256", "name": "eventId", "type": "uint256" },
-			{ "indexed": true, "internalType": "address", "name": "attendee", "type": "address" },
-			{ "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
-		],
-		"name": "TicketVerified",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{ "indexed": true, "internalType": "address", "name": "from", "type": "address" },
-			{ "indexed": true, "internalType": "address", "name": "to", "type": "address" },
-			{ "indexed": true, "internalType": "uint256", "name": "tokenId", "type": "uint256" }
-		],
-		"name": "Transfer",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{ "internalType": "address", "name": "to", "type": "address" },
-			{ "internalType": "uint256", "name": "tokenId", "type": "uint256" }
-		],
-		"name": "approve",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [ { "internalType": "address", "name": "owner", "type": "address" } ],
-		"name": "balanceOf",
-		"outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [ { "internalType": "uint256", "name": "eventId", "type": "uint256" } ],
-		"name": "cancelEvent",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{ "internalType": "uint256", "name": "tokenId", "type": "uint256" },
-			{ "internalType": "bytes32", "name": "verificationCode", "type": "bytes32" }
-		],
-		"name": "checkTicket",
-		"outputs": [
-			{ "internalType": "bool", "name": "valid", "type": "bool" },
-			{ "internalType": "bool", "name": "isUsed", "type": "bool" },
-			{ "internalType": "address", "name": "owner", "type": "address" },
-			{ "internalType": "uint256", "name": "eventId", "type": "uint256" }
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{ "internalType": "string", "name": "name", "type": "string" },
-			{ "internalType": "string", "name": "description", "type": "string" },
-			{ "internalType": "string", "name": "location", "type": "string" },
-			{ "internalType": "string", "name": "imageURI", "type": "string" },
-			{ "internalType": "uint256", "name": "startTime", "type": "uint256" },
-			{ "internalType": "uint256", "name": "endTime", "type": "uint256" },
-			{ "internalType": "uint256", "name": "ticketPrice", "type": "uint256" },
-			{ "internalType": "uint256", "name": "maxCapacity", "type": "uint256" }
-		],
-		"name": "createEvent",
-		"outputs": [ { "internalType": "uint256", "name": "eventId", "type": "uint256" } ],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [ { "internalType": "address", "name": "", "type": "address" } ],
-		"name": "creatorProceeds",
-		"outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ],
-		"name": "events",
-		"outputs": [
-			{ "internalType": "uint256", "name": "id", "type": "uint256" },
-			{ "internalType": "address", "name": "creator", "type": "address" },
-			{ "internalType": "string", "name": "name", "type": "string" },
-			{ "internalType": "string", "name": "description", "type": "string" },
-			{ "internalType": "string", "name": "location", "type": "string" },
-			{ "internalType": "string", "name": "imageURI", "type": "string" },
-			{ "internalType": "uint256", "name": "startTime", "type": "uint256" },
-			{ "internalType": "uint256", "name": "endTime", "type": "uint256" },
-			{ "internalType": "uint256", "name": "ticketPrice", "type": "uint256" },
-			{ "internalType": "uint256", "name": "maxCapacity", "type": "uint256" },
-			{ "internalType": "uint256", "name": "ticketsSold", "type": "uint256" },
-			{ "internalType": "bool", "name": "isActive", "type": "bool" },
-			{ "internalType": "bool", "name": "isCancelled", "type": "bool" }
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [ { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ],
-		"name": "getApproved",
-		"outputs": [ { "internalType": "address", "name": "", "type": "address" } ],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [ { "internalType": "address", "name": "c", "type": "address" } ],
-		"name": "getCreatorEvents",
-		"outputs": [ { "internalType": "uint256[]", "name": "", "type": "uint256[]" } ],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [ { "internalType": "uint256", "name": "eventId", "type": "uint256" } ],
-		"name": "getEvent",
-		"outputs": [
-			{
-				"components": [
-					{ "internalType": "uint256", "name": "id", "type": "uint256" },
-					{ "internalType": "address", "name": "creator", "type": "address" },
-					{ "internalType": "string", "name": "name", "type": "string" },
-					{ "internalType": "string", "name": "description", "type": "string" },
-					{ "internalType": "string", "name": "location", "type": "string" },
-					{ "internalType": "string", "name": "imageURI", "type": "string" },
-					{ "internalType": "uint256", "name": "startTime", "type": "uint256" },
-					{ "internalType": "uint256", "name": "endTime", "type": "uint256" },
-					{ "internalType": "uint256", "name": "ticketPrice", "type": "uint256" },
-					{ "internalType": "uint256", "name": "maxCapacity", "type": "uint256" },
-					{ "internalType": "uint256", "name": "ticketsSold", "type": "uint256" },
-					{ "internalType": "bool", "name": "isActive", "type": "bool" },
-					{ "internalType": "bool", "name": "isCancelled", "type": "bool" }
-				],
-				"internalType": "struct EventTicketing.Event",
-				"name": "",
-				"type": "tuple"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [ { "internalType": "uint256", "name": "id", "type": "uint256" } ],
-		"name": "getEventTickets",
-		"outputs": [ { "internalType": "uint256[]", "name": "", "type": "uint256[]" } ],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [ { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ],
-		"name": "getTicket",
-		"outputs": [
-			{
-				"components": [
-					{ "internalType": "uint256", "name": "tokenId", "type": "uint256" },
-					{ "internalType": "uint256", "name": "eventId", "type": "uint256" },
-					{ "internalType": "address", "name": "owner", "type": "address" },
-					{ "internalType": "bytes32", "name": "verificationCode", "type": "bytes32" },
-					{ "internalType": "bool", "name": "isUsed", "type": "bool" },
-					{ "internalType": "uint256", "name": "issuedAt", "type": "uint256" }
-				],
-				"internalType": "struct EventTicketing.Ticket",
-				"name": "",
-				"type": "tuple"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [ { "internalType": "address", "name": "u", "type": "address" } ],
-		"name": "getUserTickets",
-		"outputs": [ { "internalType": "uint256[]", "name": "", "type": "uint256[]" } ],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{ "internalType": "address", "name": "owner", "type": "address" },
-			{ "internalType": "address", "name": "operator", "type": "address" }
-		],
-		"name": "isApprovedForAll",
-		"outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "name",
-		"outputs": [ { "internalType": "string", "name": "", "type": "string" } ],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [ { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ],
-		"name": "ownerOf",
-		"outputs": [ { "internalType": "address", "name": "", "type": "address" } ],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{ "internalType": "uint256", "name": "eventId", "type": "uint256" },
-			{ "internalType": "bytes32", "name": "salt", "type": "bytes32" }
-		],
-		"name": "registerForEvent",
-		"outputs": [
-			{ "internalType": "uint256", "name": "tokenId", "type": "uint256" },
-			{ "internalType": "bytes32", "name": "verificationCode", "type": "bytes32" }
-		],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{ "internalType": "address", "name": "from", "type": "address" },
-			{ "internalType": "address", "name": "to", "type": "address" },
-			{ "internalType": "uint256", "name": "tokenId", "type": "uint256" }
-		],
-		"name": "safeTransferFrom",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{ "internalType": "address", "name": "from", "type": "address" },
-			{ "internalType": "address", "name": "to", "type": "address" },
-			{ "internalType": "uint256", "name": "tokenId", "type": "uint256" },
-			{ "internalType": "bytes", "name": "data", "type": "bytes" }
-		],
-		"name": "safeTransferFrom",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{ "internalType": "address", "name": "operator", "type": "address" },
-			{ "internalType": "bool", "name": "approved", "type": "bool" }
-		],
-		"name": "setApprovalForAll",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [ { "internalType": "bytes4", "name": "interfaceId", "type": "bytes4" } ],
-		"name": "supportsInterface",
-		"outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "symbol",
-		"outputs": [ { "internalType": "string", "name": "", "type": "string" } ],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ],
-		"name": "tickets",
-		"outputs": [
-			{ "internalType": "uint256", "name": "tokenId", "type": "uint256" },
-			{ "internalType": "uint256", "name": "eventId", "type": "uint256" },
-			{ "internalType": "address", "name": "owner", "type": "address" },
-			{ "internalType": "bytes32", "name": "verificationCode", "type": "bytes32" },
-			{ "internalType": "bool", "name": "isUsed", "type": "bool" },
-			{ "internalType": "uint256", "name": "issuedAt", "type": "uint256" }
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [ { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ],
-		"name": "tokenURI",
-		"outputs": [ { "internalType": "string", "name": "", "type": "string" } ],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "totalEvents",
-		"outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "totalTickets",
-		"outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{ "internalType": "address", "name": "from", "type": "address" },
-			{ "internalType": "address", "name": "to", "type": "address" },
-			{ "internalType": "uint256", "name": "tokenId", "type": "uint256" }
-		],
-		"name": "transferFrom",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{ "internalType": "uint256", "name": "eventId", "type": "uint256" },
-			{ "internalType": "string", "name": "name", "type": "string" },
-			{ "internalType": "string", "name": "description", "type": "string" },
-			{ "internalType": "string", "name": "location", "type": "string" },
-			{ "internalType": "string", "name": "imageURI", "type": "string" }
-		],
-		"name": "updateEvent",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [ { "internalType": "bytes32", "name": "", "type": "bytes32" } ],
-		"name": "usedCodes",
-		"outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{ "internalType": "uint256", "name": "", "type": "uint256" },
-			{ "internalType": "address", "name": "", "type": "address" }
-		],
-		"name": "userEventTicket",
-		"outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{ "internalType": "uint256", "name": "tokenId", "type": "uint256" },
-			{ "internalType": "bytes32", "name": "verificationCode", "type": "bytes32" }
-		],
-		"name": "verifyTicket",
-		"outputs": [ { "internalType": "bool", "name": "valid", "type": "bool" } ],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "withdrawProceeds",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	}
+  "event EventCreated(uint256 indexed eventId, address indexed creator, string name, uint256 ticketPrice, uint256 maxCapacity, uint256 startTime)",
+  "event TicketMinted(uint256 indexed tokenId, uint256 indexed eventId, address indexed attendee, bytes32 verificationCode)",
+  "function totalEvents() view returns (uint256)",
+  "function totalTickets() view returns (uint256)",
+  "function getEvent(uint256 eventId) view returns (tuple(uint256 id, address creator, string name, string description, string location, string imageURI, uint256 startTime, uint256 endTime, uint256 ticketPrice, uint256 maxCapacity, uint256 ticketsSold, bool isActive, bool isCancelled))",
+  "function getTicket(uint256 tokenId) view returns (tuple(uint256 tokenId, uint256 eventId, address owner, bytes32 verificationCode, bool isUsed, uint256 issuedAt))",
+  "function getUserTickets(address u) view returns (uint256[])",
+  "function getCreatorEvents(address c) view returns (uint256[])",
+  "function creatorProceeds(address) view returns (uint256)",
+  "function createEvent(string name, string description, string location, string imageURI, uint256 startTime, uint256 endTime, uint256 ticketPrice, uint256 maxCapacity) returns (uint256 eventId)",
+  "function registerForEvent(uint256 eventId, bytes32 salt) payable returns (uint256 tokenId, bytes32 verificationCode)",
+  "function cancelEvent(uint256 eventId)",
+  "function withdrawProceeds()",
+  "function checkTicket(uint256 tokenId, bytes32 verificationCode) view returns (bool valid, bool isUsed, address owner, uint256 eventId)",
+  "function verifyTicket(uint256 tokenId, bytes32 verificationCode) returns (bool valid)"
 ];
 
 /* ─────────────────────────────────────────────────────────
@@ -1230,20 +762,42 @@ let walletAddress = null;
 let pendingEventId = null;
 let pendingEventPrice = "0";
 
-// Image upload state
 let uploadedImageURI = "";
 let imageUploadInFlight = false;
 
 /* ─────────────────────────────────────────────────────────
    Wallet
    ───────────────────────────────────────────────────────── */
+async function ensureNetwork() {
+  const current = await window.ethereum.request({ method: 'eth_chainId' });
+  if (current.toLowerCase() === DEFAULT_CHAIN.chainId.toLowerCase()) return;
+  try {
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: DEFAULT_CHAIN.chainId }],
+    });
+  } catch (e) {
+    // 4902 = chain not added; some wallets wrap it as -32603
+    if (e.code === 4902 || e.code === -32603) {
+      await window.ethereum.request({
+        method: 'wallet_addEthereumChain',
+        params: [DEFAULT_CHAIN],
+      });
+    } else {
+      throw e;
+    }
+  }
+}
+
 async function connectWallet() {
   if (!window.ethereum) {
     toast("MetaMask not detected. Install it to continue.", "error"); return;
   }
   try {
-    provider = new ethers.providers.Web3Provider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
+    await window.ethereum.request({ method: "eth_requestAccounts" });
+    await ensureNetwork();
+
+    provider = new ethers.providers.Web3Provider(window.ethereum, "any");
     signer = provider.getSigner();
     walletAddress = await signer.getAddress();
 
@@ -1264,6 +818,11 @@ async function connectWallet() {
 function requireWallet() {
   if (!walletAddress) { toast("Connect your wallet first", "error"); return false; }
   return true;
+}
+
+if (window.ethereum) {
+  window.ethereum.on('chainChanged', () => location.reload());
+  window.ethereum.on('accountsChanged', () => location.reload());
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -1331,7 +890,7 @@ async function loadEvents() {
     const totalT = (await contract.totalTickets()).toNumber();
     document.getElementById("statTickets").textContent = totalT;
   } catch(err) {
-    grid.innerHTML = `<div class="empty"><div class="empty-title">Error loading events</div><p>${err.message}</p></div>`;
+    grid.innerHTML = `<div class="empty"><div class="empty-title">Error loading events</div><p>${escHtml(err.message)}</p></div>`;
   }
 }
 
@@ -1362,7 +921,7 @@ function buildEventCard(e, isOwner) {
     <div class="event-card-body">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
         ${statusTag}
-        <span class="tag tag-violet">${isFree ? "Free" : priceEth + " ETH"}</span>
+        <span class="tag tag-violet">${isFree ? "Free" : priceEth + " " + SYM}</span>
       </div>
       <div class="event-card-title">${escHtml(name)}</div>
       <div class="event-card-meta">
@@ -1397,7 +956,7 @@ function openRegister(eventId, name, priceEth, isFree) {
   pendingEventPrice = priceEth;
 
   document.getElementById("registerEventInfo").textContent = name;
-  document.getElementById("registerPrice").textContent     = isFree ? "Free ✓" : `Price: ${priceEth} ETH`;
+  document.getElementById("registerPrice").textContent     = isFree ? "Free ✓" : `Price: ${priceEth} ${SYM}`;
   document.getElementById("registerModal").classList.add("open");
 }
 
@@ -1412,14 +971,13 @@ async function confirmRegister() {
   btn.innerHTML = '<span class="spinner"></span>Minting…';
 
   try {
-    const salt  = ethers.utils.randomBytes(32);
+    const salt  = ethers.utils.hexlify(ethers.utils.randomBytes(32));
     const value = ethers.utils.parseEther(pendingEventPrice || "0");
 
     const tx = await contract.registerForEvent(pendingEventId, salt, { value });
     toast("Transaction sent… waiting for confirmation");
     const receipt = await tx.wait();
 
-    // Pull TicketMinted event
     const iface = new ethers.utils.Interface(ABI);
     let verCode = "—";
     let tokenId = "—";
@@ -1428,7 +986,7 @@ async function confirmRegister() {
         const parsed = iface.parseLog(log);
         if (parsed.name === "TicketMinted") {
           tokenId = parsed.args[0].toString();
-          verCode = parsed.args[3]; // bytes32
+          verCode = parsed.args[3];
         }
       } catch(_) {}
     }
@@ -1436,7 +994,6 @@ async function confirmRegister() {
     closeModal("registerModal");
     toast(`Ticket #${tokenId} minted! 🎉`, "success");
 
-    // Store code locally for QR generation
     sessionStorage.setItem(`tc_${tokenId}`, verCode);
 
     showPage("my-tickets");
@@ -1472,7 +1029,7 @@ async function loadMyTickets() {
       list.appendChild(buildTicketCard(ticketData[i], eventData[i]));
     }
   } catch(e) {
-    list.innerHTML = `<div class="empty"><div class="empty-title">Error</div><p>${e.message}</p></div>`;
+    list.innerHTML = `<div class="empty"><div class="empty-title">Error</div><p>${escHtml(e.message)}</p></div>`;
   }
 }
 
@@ -1505,7 +1062,6 @@ function buildTicketCard(ticket, evt) {
     </div>
   `;
 
-  // Render QR after DOM insert (next tick)
   setTimeout(() => {
     const el = document.getElementById(qrId);
     if (el && code) {
@@ -1657,7 +1213,6 @@ async function deployEvent() {
 
     toast(`Event #${newEventId} created! 🎉`, "success");
 
-    // Clear form
     ["evName","evDesc","evLocation","evStart","evEnd","evPrice","evCapacity"]
       .forEach(id => document.getElementById(id).value = "");
     resetImageUpload();
@@ -1689,13 +1244,12 @@ async function loadMyEvents() {
     grid.innerHTML = "";
     evts.forEach(e => grid.appendChild(buildEventCard(e, true)));
 
-    // Show proceeds
     const proceeds = await contract.creatorProceeds(walletAddress);
     if (!proceeds.eq(0)) {
-      toast(`Pending proceeds: ${ethers.utils.formatEther(proceeds)} ETH`, "success");
+      toast(`Pending proceeds: ${ethers.utils.formatEther(proceeds)} ${SYM}`, "success");
     }
   } catch(e) {
-    grid.innerHTML = `<div class="empty"><div class="empty-title">Error</div><p>${e.message}</p></div>`;
+    grid.innerHTML = `<div class="empty"><div class="empty-title">Error</div><p>${escHtml(e.message)}</p></div>`;
   }
 }
 
@@ -1721,7 +1275,7 @@ async function withdrawProceeds() {
     const tx = await contract.withdrawProceeds();
     toast("Withdrawing…");
     await tx.wait();
-    toast(`${ethers.utils.formatEther(proceeds)} ETH withdrawn ✓`, "success");
+    toast(`${ethers.utils.formatEther(proceeds)} ${SYM} withdrawn ✓`, "success");
   } catch(e) {
     toast(e.reason || e.message, "error");
   }
@@ -1797,20 +1351,18 @@ function toast(msg, type = "") {
   toastTimer = setTimeout(() => el.classList.remove("show"), 4000);
 }
 
-// Close modal on overlay click
 document.getElementById("registerModal").addEventListener("click", function(e) {
   if (e.target === this) closeModal("registerModal");
 });
 
-// Override showPage to handle nav items properly
 const _navItems = document.querySelectorAll(".nav-item");
 _navItems.forEach(item => {
-  item.addEventListener("click", function(e) {
+  item.addEventListener("click", function() {
     _navItems.forEach(n => n.classList.remove("active"));
     this.classList.add("active");
   });
 });
-</script>
+</script>  
 
 </body>
 </html>
