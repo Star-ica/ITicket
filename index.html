@@ -5,19 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>TicketChain — Web3 Event Ticketing</title>
 
-<!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
 
-<!-- ethers.js v5 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
-
-<!-- QRCode.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
-/* ── Reset & Tokens ─────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -49,15 +44,13 @@ body {
   overflow-x: hidden;
 }
 
-/* ── Layout ─────────────────────────────────────────────── */
 .shell {
   display: grid;
   grid-template-columns: 240px 1fr;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto 1fr auto;
   min-height: 100vh;
 }
 
-/* ── Topbar ─────────────────────────────────────────────── */
 .topbar {
   grid-column: 1 / -1;
   display: flex;
@@ -107,7 +100,6 @@ body {
 }
 .wallet-btn.connected { border-color: var(--success); background: rgba(16,185,129,0.15); color: var(--success); }
 
-/* ── Sidebar ────────────────────────────────────────────── */
 .sidebar {
   background: var(--navy-mid);
   border-right: 1px solid var(--border);
@@ -147,17 +139,11 @@ body {
   text-transform: uppercase;
 }
 
-/* ── Main Content ───────────────────────────────────────── */
-.main {
-  padding: 36px 40px;
-  overflow-y: auto;
-}
+.main { padding: 36px 40px; overflow-y: auto; }
 
-/* ── Pages ──────────────────────────────────────────────── */
 .page { display: none; }
 .page.active { display: block; }
 
-/* ── Page Header ────────────────────────────────────────── */
 .page-header {
   display: flex;
   align-items: flex-end;
@@ -172,7 +158,6 @@ body {
 }
 .page-subtitle { color: var(--muted); margin-top: 4px; font-size: 0.9rem; }
 
-/* ── Buttons ────────────────────────────────────────────── */
 .btn {
   font-family: var(--font-head);
   font-weight: 600;
@@ -197,7 +182,6 @@ body {
 .btn-sm { padding: 7px 14px; font-size: 0.8rem; }
 .btn-danger { background: var(--error); color: #fff; }
 
-/* ── Cards ──────────────────────────────────────────────── */
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -268,7 +252,6 @@ body {
   transition: width 0.4s;
 }
 
-/* ── Form ───────────────────────────────────────────────── */
 .form-card {
   background: var(--navy-soft);
   border: 1px solid var(--border);
@@ -306,7 +289,6 @@ input:focus, textarea:focus, select:focus { border-color: var(--violet); }
 textarea { resize: vertical; min-height: 80px; }
 input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(0.5); }
 
-/* ── Image upload box ───────────────────────────────────── */
 .image-upload-box {
   border: 1.5px dashed var(--border);
   border-radius: var(--radius);
@@ -342,7 +324,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
 .upload-status.success { color: var(--success); }
 .upload-status.error { color: var(--error); }
 
-/* ── Ticket card ─────────────────────────────────────────── */
 .ticket-card {
   background: var(--navy-soft);
   border: 1px solid var(--border);
@@ -375,7 +356,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
   margin-bottom: 12px;
 }
 
-/* ── Verify section ─────────────────────────────────────── */
 .verify-card {
   background: var(--navy-soft);
   border: 1px solid var(--border);
@@ -394,7 +374,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
 .verify-result.valid   { background: rgba(16,185,129,0.12); border: 1px solid var(--success); color: var(--success); }
 .verify-result.invalid { background: rgba(239,68,68,0.12);  border: 1px solid var(--error);   color: var(--error); }
 
-/* ── Stats row ──────────────────────────────────────────── */
 .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
 .stat-box {
   background: var(--navy-soft);
@@ -410,7 +389,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
 }
 .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
 
-/* ── Toast ──────────────────────────────────────────────── */
 #toast {
   position: fixed;
   bottom: 28px; right: 28px;
@@ -430,7 +408,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
 #toast.success { border-color: var(--success); }
 #toast.error   { border-color: var(--error); }
 
-/* ── Modal ──────────────────────────────────────────────── */
 .modal-overlay {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.65);
@@ -456,7 +433,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
 }
 .modal-title { font-family: var(--font-head); font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; }
 
-/* ── Empty state ────────────────────────────────────────── */
 .empty {
   text-align: center;
   padding: 60px 20px;
@@ -465,7 +441,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
 .empty-icon { font-size: 3rem; margin-bottom: 12px; }
 .empty-title { font-family: var(--font-head); font-size: 1.1rem; color: var(--text); margin-bottom: 6px; }
 
-/* ── Loader ─────────────────────────────────────────────── */
 .spinner {
   display: inline-block;
   width: 16px; height: 16px;
@@ -478,13 +453,35 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Responsive ─────────────────────────────────────────── */
+/* ── Footer ── */
+.footer {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 18px 32px;
+  background: var(--navy-mid);
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.footer-links { display: flex; gap: 20px; }
+.footer a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.footer a:hover { color: var(--violet-lt); }
+
 @media (max-width: 768px) {
   .shell { grid-template-columns: 1fr; }
   .sidebar { display: none; }
   .main { padding: 20px 16px; }
   .stats-row { grid-template-columns: 1fr; }
   .form-row-2 { grid-template-columns: 1fr; }
+  .footer { padding: 16px; }
 }
 </style>
 </head>
@@ -492,7 +489,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
 
 <div class="shell">
 
-  <!-- ── Topbar ── -->
   <header class="topbar">
     <div class="logo">
       <div class="logo-icon">🎫</div>
@@ -501,7 +497,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
     <button id="walletBtn" class="wallet-btn" onclick="connectWallet()">Connect Wallet</button>
   </header>
 
-  <!-- ── Sidebar ── -->
   <nav class="sidebar">
     <div class="nav-section">Explore</div>
     <div class="nav-item active" onclick="showPage('discover')">
@@ -525,10 +520,8 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
     </div>
   </nav>
 
-  <!-- ── Main ── -->
   <main class="main">
 
-    <!-- ─ Discover ─ -->
     <section id="page-discover" class="page active">
       <div class="page-header">
         <div>
@@ -561,7 +554,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
       </div>
     </section>
 
-    <!-- ─ My Tickets ─ -->
     <section id="page-my-tickets" class="page">
       <div class="page-header">
         <div>
@@ -579,7 +571,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
       </div>
     </section>
 
-    <!-- ─ Create Event ─ -->
     <section id="page-create" class="page">
       <div class="page-header">
         <div>
@@ -627,7 +618,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
         </div>
         <div class="form-row-2">
           <div>
-            <label>Ticket Price (ETH) — 0 for free</label>
+            <label>Ticket Price (BOT) — 0 for free</label>
             <input id="evPrice" type="number" step="0.001" min="0" placeholder="0.00" />
           </div>
           <div>
@@ -642,7 +633,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
       </div>
     </section>
 
-    <!-- ─ My Events (Creator) ─ -->
     <section id="page-my-events" class="page">
       <div class="page-header">
         <div>
@@ -662,7 +652,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
       </div>
     </section>
 
-    <!-- ─ Verify ─ -->
     <section id="page-verify" class="page">
       <div class="page-header">
         <div>
@@ -690,9 +679,17 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
     </section>
 
   </main>
+
+  <footer class="footer">
+    <span>TicketChain · Built on Botchain</span>
+    <div class="footer-links">
+      <a href="https://botchain.ai" target="_blank" rel="noopener noreferrer">Botchain Website</a>
+      <a href="https://scan.botchain.ai" target="_blank" rel="noopener noreferrer">Explorer</a>
+    </div>
+  </footer>
+
 </div>
 
-<!-- ── Register Modal ── -->
 <div id="registerModal" class="modal-overlay">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('registerModal')">✕</button>
@@ -711,18 +708,15 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
   </div>
 </div>
 
-<!-- ── Toast ── -->
 <div id="toast"></div>
 
 <script>
-
-  /* ─────────────────────────────────────────────────────────
-   CONFIG
-   ───────────────────────────────────────────────────────── */
+/* CONFIG */
 const CONTRACT_ADDRESS = "0x9A65c4E4fee23D0ddB2578be162E30CF3Af91c64";
 
-// Pinata JWT is exposed client-side. Rotate the old one and proxy uploads via your backend for production.
-const PINATA_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIxZTg0YmJlOS0zOGZkLTQxZDAtYTA3ZS0yOGIyYzQwMjI0MzMiLCJlbWFpbCI6ImplcnlkYW0xNDhAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBpbl9wb2xpY3kiOnsicmVnaW9ucyI6W3siZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiRlJBMSJ9LHsiZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiTllDMSJ9XSwidmVyc2lvbiI6MX0sIm1mYV9lbmFibGVkIjpmYWxzZSwic3RhdHVzIjoiQUNUSVZFIn0sImF1dGhlbnRpY2F0aW9uVHlwZSI6InNjb3BlZEtleSIsInNjb3BlZEtleUtleSI6IjU0OTcyMTdkMzM4MGUyMmE5MDZiIiwic2NvcGVkS2V5U2VjcmV0IjoiOTg4NzA4MDc5OTA1NjhiZDgyYmQ4YzEyMjBkYWFmZDk1NzNhMGIxMGJhYzFjNGQ4ZjQ1NzA0OTUwOWEzZDc2NyIsImV4cCI6MTc5ODI3Nzc1OX0.45Q6OvDON7RJE4xcI92p2fMEAVQ1SQYAfcUZkIRdt-I"; 
+// Exposed client-side: rotate the old key and proxy uploads via your backend for production.
+const PINATA_JWT = "YOUR_PINATA_JWT_HERE";
+
 const NETWORKS = {
   botchain: {
     chainId: '0x2A5', // 677
@@ -754,9 +748,7 @@ const ABI = [
   "function verifyTicket(uint256 tokenId, bytes32 verificationCode) returns (bool valid)"
 ];
 
-/* ─────────────────────────────────────────────────────────
-   State
-   ───────────────────────────────────────────────────────── */
+/* State */
 let provider, signer, contract;
 let walletAddress = null;
 let pendingEventId = null;
@@ -765,9 +757,7 @@ let pendingEventPrice = "0";
 let uploadedImageURI = "";
 let imageUploadInFlight = false;
 
-/* ─────────────────────────────────────────────────────────
-   Wallet
-   ───────────────────────────────────────────────────────── */
+/* Wallet */
 async function ensureNetwork() {
   const current = await window.ethereum.request({ method: 'eth_chainId' });
   if (current.toLowerCase() === DEFAULT_CHAIN.chainId.toLowerCase()) return;
@@ -825,9 +815,7 @@ if (window.ethereum) {
   window.ethereum.on('accountsChanged', () => location.reload());
 }
 
-/* ─────────────────────────────────────────────────────────
-   Navigation
-   ───────────────────────────────────────────────────────── */
+/* Navigation */
 function showPage(name) {
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
@@ -841,9 +829,7 @@ function showPage(name) {
   if (name === "my-events")  loadMyEvents();
 }
 
-/* ─────────────────────────────────────────────────────────
-   Stats
-   ───────────────────────────────────────────────────────── */
+/* Stats */
 async function loadStats() {
   if (!contract) return;
   try {
@@ -856,9 +842,7 @@ async function loadStats() {
   } catch(e) { console.warn(e); }
 }
 
-/* ─────────────────────────────────────────────────────────
-   Discover Events
-   ───────────────────────────────────────────────────────── */
+/* Discover Events */
 async function loadEvents() {
   if (!requireWallet()) return;
   const grid = document.getElementById("eventsGrid");
@@ -947,9 +931,7 @@ function buildEventCard(e, isOwner) {
   return card;
 }
 
-/* ─────────────────────────────────────────────────────────
-   Register
-   ───────────────────────────────────────────────────────── */
+/* Register */
 function openRegister(eventId, name, priceEth, isFree) {
   if (!requireWallet()) return;
   pendingEventId    = eventId;
@@ -1006,9 +988,7 @@ async function confirmRegister() {
   }
 }
 
-/* ─────────────────────────────────────────────────────────
-   My Tickets
-   ───────────────────────────────────────────────────────── */
+/* My Tickets */
 async function loadMyTickets() {
   if (!requireWallet()) return;
   const list = document.getElementById("myTicketsList");
@@ -1079,9 +1059,7 @@ function buildTicketCard(ticket, evt) {
   return div;
 }
 
-/* ─────────────────────────────────────────────────────────
-   Image Upload (IPFS via Pinata)
-   ───────────────────────────────────────────────────────── */
+/* Image Upload (IPFS via Pinata) */
 function ipfsToHttp(uri) {
   if (!uri) return "";
   return uri.startsWith("ipfs://")
@@ -1158,9 +1136,7 @@ function resetImageUpload() {
   `;
 }
 
-/* ─────────────────────────────────────────────────────────
-   Create Event
-   ───────────────────────────────────────────────────────── */
+/* Create Event */
 async function deployEvent() {
   if (!requireWallet()) return;
 
@@ -1226,9 +1202,7 @@ async function deployEvent() {
   }
 }
 
-/* ─────────────────────────────────────────────────────────
-   My Events (Creator)
-   ───────────────────────────────────────────────────────── */
+/* My Events (Creator) */
 async function loadMyEvents() {
   if (!requireWallet()) return;
   const grid = document.getElementById("myEventsGrid");
@@ -1281,9 +1255,7 @@ async function withdrawProceeds() {
   }
 }
 
-/* ─────────────────────────────────────────────────────────
-   Verify
-   ───────────────────────────────────────────────────────── */
+/* Verify */
 async function checkTicket() {
   if (!requireWallet()) return;
   const tokenId = document.getElementById("vTokenId").value;
@@ -1333,9 +1305,7 @@ async function verifyTicket() {
   }
 }
 
-/* ─────────────────────────────────────────────────────────
-   Helpers
-   ───────────────────────────────────────────────────────── */
+/* Helpers */
 function escHtml(str) {
   return String(str)
     .replace(/&/g,"&amp;").replace(/</g,"&lt;")
@@ -1362,7 +1332,7 @@ _navItems.forEach(item => {
     this.classList.add("active");
   });
 });
-</script>  
+</script>
 
 </body>
 </html>
